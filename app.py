@@ -1,4 +1,5 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 import jwt
 
@@ -25,8 +26,8 @@ class TokenRequest(BaseModel):
 
 
 @app.get("/")
-def root():
-    return {"status": "ok"}
+def home():
+    return {"status": "running"}
 
 
 @app.post("/verify")
@@ -47,8 +48,38 @@ def verify(req: TokenRequest):
             "aud": payload.get("aud"),
         }
 
-    except Exception:
-        raise HTTPException(
+    except jwt.ExpiredSignatureError:
+        return JSONResponse(
             status_code=401,
-            detail={"valid": False},
+            content={"valid": False},
+        )
+
+    except jwt.InvalidAudienceError:
+        return JSONResponse(
+            status_code=401,
+            content={"valid": False},
+        )
+
+    except jwt.InvalidIssuerError:
+        return JSONResponse(
+            status_code=401,
+            content={"valid": False},
+        )
+
+    except jwt.InvalidSignatureError:
+        return JSONResponse(
+            status_code=401,
+            content={"valid": False},
+        )
+
+    except jwt.InvalidTokenError:
+        return JSONResponse(
+            status_code=401,
+            content={"valid": False},
+        )
+
+    except Exception:
+        return JSONResponse(
+            status_code=401,
+            content={"valid": False},
         )
